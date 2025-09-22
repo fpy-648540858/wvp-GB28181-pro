@@ -19,7 +19,7 @@ spring:
     # [必须修改] 端口号
     port: 6379
     # [可选] 数据库 DB
-    database: 7
+    database: 6
     # [可选] 访问密码,若你的redis服务器没有设置密码，就不需要用密码去连接
     password:
     # [可选] 超时时间
@@ -28,12 +28,12 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/wvp273?useUnicode=true&characterEncoding=UTF8&rewriteBatchedStatements=true&serverTimezone=PRC&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://127.0.0.1:3306/wvp273Cascade?useUnicode=true&characterEncoding=UTF8&rewriteBatchedStatements=true&serverTimezone=PRC&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true
     username: root
     password: root
 #[可选] WVP监听的HTTP端口, 网页和接口调用都是这个端口
 server:
-  port: 18080
+  port: 18081
   # [可选] HTTPS配置， 默认不开启
   ssl:
     # [可选] 是否开启HTTPS访问
@@ -49,14 +49,14 @@ server:
 sip:
   ip: 192.168.61.76
   # [可选] 28181服务监听的端口
-  port: 8116
+  port: 8117
   # 根据国标6.1.2中规定，domain宜采用ID统一编码的前十位编码。国标附录D中定义前8位为中心编码（由省级、市级、区级、基层编号组成，参照GB/T 2260-2007）
   # 后两位为行业编码，定义参照附录D.3
   # 3701020049标识山东济南历下区 信息行业接入
   # [可选]
   domain: 4101050000
   # [可选]
-  id: 41010500002000000001
+  id: 41010500002000000002
   # [可选] 默认设备认证密码，后续扩展使用设备单独密码, 移除密码将不进行校验
   password: 12345678
   # 是否存储alarm信息
@@ -64,12 +64,12 @@ sip:
 
 #zlm 默认服务器配置
 media:
-  id: zlmediakit-local
+  id: zlmediakit-local_cascade
   #id: your_server_id
   # [必须修改] zlm服务器的内网IP
   ip: 192.168.61.76
   # [必须修改] zlm服务器的http.port
-  http-port: 8080
+  http-port: 8081
   # [必选选] zlm服务器的api.secret=secret
   secret: ibwdVRZwzOxmTc8QZFR6tAJnGhMRMB1Q
   # [非必选] zlm服务器的hook回调ip，不配置默认为127.0.0.1
@@ -80,9 +80,9 @@ media:
     enable: true
     # [可选] 在此范围内选择端口用于媒体流传输, 必须提前在zlm上配置该属性，不然自动配置此属性可能不成功
     #port-range: 40000,45000 # 端口范围
-    port-range: 40000,40110 # 端口范围
+    port-range: 40111,40210 # 端口范围
     # [可选] 国标级联在此范围内选择端口发送媒体流,
-    send-port-range: 50000,50100 # 端口范围
+    send-port-range: 55000,55100 # 端口范围
 # [根据业务需求配置]
 user-settings:
   # 点播/录像回放 等待超时时间,单位：毫秒
