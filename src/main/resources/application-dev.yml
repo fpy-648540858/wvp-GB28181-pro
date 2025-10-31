@@ -62,6 +62,7 @@ sip:
   # 是否存储alarm信息
   alarm: false
 
+
 #zlm 默认服务器配置
 media:
   id: zlmediakit-local
@@ -80,9 +81,9 @@ media:
     enable: true
     # [可选] 在此范围内选择端口用于媒体流传输, 必须提前在zlm上配置该属性，不然自动配置此属性可能不成功
     #port-range: 40000,45000 # 端口范围
-    port-range: 40000,40110 # 端口范围
+    port-range: 40000,40050 # 端口范围
     # [可选] 国标级联在此范围内选择端口发送媒体流,
-    send-port-range: 50000,50100 # 端口范围
+    send-port-range: 50000,50050 # 端口范围
 # [根据业务需求配置]
 user-settings:
   # 点播/录像回放 等待超时时间,单位：毫秒
