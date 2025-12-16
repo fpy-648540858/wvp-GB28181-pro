@@ -258,22 +258,27 @@ public class ZLMRESTfulUtils {
             param.put("schema",schema);
         }
         param.put("vhost","__defaultVhost__");
-        String response = sendPost(mediaServer, "getMediaList",param, (responseStr -> {
-            if (callback == null) {
-                return;
-            }
-            if (responseStr == null) {
-                callback.run(ZLMResult.getFailForMediaServer());
-            }else {
-                ZLMResult<JSONArray> zlmResult = JSON.parseObject(responseStr, new TypeReference<ZLMResult<JSONArray>>() {});
-                if (zlmResult == null) {
+        RequestCallback requestCallback = null;
+        if (callback != null) {
+            requestCallback =  (responseStr -> {
+                if (callback == null) {
+                    return;
+                }
+                if (responseStr == null) {
                     callback.run(ZLMResult.getFailForMediaServer());
                 }else {
-                    callback.run(zlmResult);
-                }
+                    ZLMResult<JSONArray> zlmResult = JSON.parseObject(responseStr, new TypeReference<ZLMResult<JSONArray>>() {});
+                    if (zlmResult == null) {
+                        callback.run(ZLMResult.getFailForMediaServer());
+                    }else {
+                        callback.run(zlmResult);
+                    }
 
-            }
-        }));
+                }
+            });
+        }
+
+        String response = sendPost(mediaServer, "getMediaList",param, requestCallback);
         if (response == null) {
             return ZLMResult.getFailForMediaServer();
         }else {
@@ -583,11 +588,6 @@ public class ZLMRESTfulUtils {
     }
 
     public ZLMResult<StreamProxyResult> addStreamProxy(MediaServer mediaServer, String app, String stream, String url, boolean enable_audio, boolean enable_mp4, String rtp_type, Integer timeOut) {
-        try {
-            url = URLEncoder.encode(url, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new ControllerException(ErrorCode.ERROR100.getCode(),"url编码失败");
-        }
         Map<String, Object> param = new HashMap<>();
         param.put("vhost", "__defaultVhost__");
         param.put("app", app);

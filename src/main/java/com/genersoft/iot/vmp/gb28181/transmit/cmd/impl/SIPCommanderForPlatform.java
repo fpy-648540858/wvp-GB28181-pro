@@ -42,7 +42,9 @@ import javax.sip.header.WWWAuthenticateHeader;
 import javax.sip.message.Request;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -136,7 +138,7 @@ public class SIPCommanderForPlatform implements ISIPCommanderForPlatform {
 
     @Override
     public String keepalive(Platform parentPlatform, SipSubscribe.Event errorEvent , SipSubscribe.Event okEvent) throws SipException, InvalidArgumentException, ParseException {
-        log.info("[国标级联] 发送心跳， 上级平台编号： {}", parentPlatform.getServerGBId());
+        log.info("[国标级联] 发送心跳， 上级平台： {}/{}", parentPlatform.getName(), parentPlatform.getServerGBId());
         String characterSet = parentPlatform.getCharacterSet();
         StringBuffer keepaliveXml = new StringBuffer(200);
         keepaliveXml.append("<?xml version=\"1.0\" encoding=\"")
@@ -218,16 +220,18 @@ public class SIPCommanderForPlatform implements ISIPCommanderForPlatform {
         if (index > channels.size()) {
             return;
         }
-        List<CommonGBChannel> deviceChannels;
-        if (index + parentPlatform.getCatalogGroup() < channels.size()) {
-            deviceChannels = channels.subList(index, index + parentPlatform.getCatalogGroup());
+        String catalogXml;
+        if (channels.isEmpty()) {
+            catalogXml = getCatalogXml(Collections.emptyList(), sn, parentPlatform, 0);
         }else {
-            deviceChannels = channels.subList(index, channels.size());
+            List<CommonGBChannel> subChannelList;
+            if (index + parentPlatform.getCatalogGroup() < channels.size()) {
+                subChannelList = channels.subList(index, index + parentPlatform.getCatalogGroup());
+            }else {
+                subChannelList = channels.subList(index, channels.size());
+            }
+            catalogXml = getCatalogXml(subChannelList, sn, parentPlatform, channels.size());
         }
-        if(deviceChannels.isEmpty()) {
-            return;
-        }
-        String catalogXml = getCatalogXml(deviceChannels, sn, parentPlatform, channels.size());
         // callid
         CallIdHeader callIdHeader = sipSender.getNewCallIdHeader(parentPlatform.getDeviceIp(),parentPlatform.getTransport());
 
@@ -353,6 +357,7 @@ public class SIPCommanderForPlatform implements ISIPCommanderForPlatform {
         if (parentPlatform == null) {
             return;
         }
+        log.info("[发送 移动位置订阅] {}/{}->{},{}", parentPlatform.getServerGBId(), gpsMsgInfo.getId(), gpsMsgInfo.getLng(), gpsMsgInfo.getLat());
         if (log.isDebugEnabled()) {
             log.debug("[发送 移动位置订阅] {}/{}->{},{}", parentPlatform.getServerGBId(), gpsMsgInfo.getId(), gpsMsgInfo.getLng(), gpsMsgInfo.getLat());
         }
@@ -430,7 +435,8 @@ public class SIPCommanderForPlatform implements ISIPCommanderForPlatform {
         Integer finalIndex = index;
         String catalogXmlContent = getCatalogXmlContentForCatalogAddOrUpdate(parentPlatform, channels,
                 deviceChannels.size(), type, subscribeInfo);
-        log.info("[发送NOTIFY通知]类型： {}，发送数量： {}", type, channels.size());
+        String channelDeviceIds = channels.stream().map(CommonGBChannel::getGbDeviceId).collect(Collectors.joining(","));
+        log.info("[发送NOTIFY通知]类型： {}，通道： {}", type, channelDeviceIds);
         sendNotify(parentPlatform, catalogXmlContent, subscribeInfo, eventResult -> {
             log.error("发送NOTIFY通知消息失败。错误：{} {}", eventResult.statusCode, eventResult.msg);
             log.error(catalogXmlContent);

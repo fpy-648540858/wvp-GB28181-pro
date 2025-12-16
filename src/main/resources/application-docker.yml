@@ -6,18 +6,19 @@ spring:
             max-request-size: 100MB
     cache:
         type: redis
-    # REDIS数据库配置
-    redis:
-        # [必须修改] Redis服务器IP, REDIS安装在本机的,使用127.0.0.1
-        host: ${REDIS_HOST:127.0.0.1}
-        # [必须修改] 端口号
-        port: ${REDIS_PORT:6379}
-        # [可选] 数据库 DB
-        database: ${REDIS_DB:6}
-        # [可选] 访问密码,若你的redis服务器没有设置密码，就不需要用密码去连接
-        password: ${REDIS_PWD:root}
-        # [可选] 超时时间
-        timeout: 10000
+    data:
+        # REDIS数据库配置
+        redis:
+            # [必须修改] Redis服务器IP, REDIS安装在本机的,使用127.0.0.1
+            host: ${REDIS_HOST:127.0.0.1}
+            # [必须修改] 端口号
+            port: ${REDIS_PORT:6379}
+            # [可选] 数据库 DB
+            database: ${REDIS_DB:6}
+            # [可选] 访问密码,若你的redis服务器没有设置密码，就不需要用密码去连接
+            password: ${REDIS_PWD:root}
+            # [可选] 超时时间
+            timeout: 10000
     # [必选] jdbc数据库配置
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
@@ -45,7 +46,7 @@ sip:
     domain: ${WVP_DOMAIN:4401020049}
     # [可选]
     id: ${WVP_ID:44010200492000000001}
-    # [可选] 默认设备认证密码，后续扩展使用设备单独密码, 移除密码将不进行校验
+    # [可选] 公共认证密码 移除密码将必须提前添加设备才能通过认证
     password: ${WVP_PWD:admin123}
 
 #zlm 默认服务器配置

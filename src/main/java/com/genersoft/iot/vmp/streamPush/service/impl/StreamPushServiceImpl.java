@@ -287,6 +287,7 @@ public class StreamPushServiceImpl implements IStreamPushService {
         }
         if (mediaServer != null) {
             mediaServerService.closeStreams(mediaServer, streamPush.getApp(), streamPush.getStream());
+            mediaServerService.stopSendRtp(mediaServer, streamPush.getApp(), streamPush.getStream(), null);
         }
         streamPush.setPushing(false);
         if (userSetting.getUsePushingAsStatus()) {
@@ -296,7 +297,6 @@ public class StreamPushServiceImpl implements IStreamPushService {
             }
         }
         sendRtpServerService.deleteByStream(streamPush.getStream());
-        mediaServerService.stopSendRtp(mediaServer, streamPush.getApp(), streamPush.getStream(), null);
         streamPush.setUpdateTime(DateUtil.getNow());
         streamPushMapper.update(streamPush);
         return true;
@@ -335,6 +335,9 @@ public class StreamPushServiceImpl implements IStreamPushService {
         }
         if (!mediaInfoList.isEmpty()) {
             for (MediaInfo mediaInfo : mediaInfoList) {
+                if (mediaInfo == null) {
+                    continue;
+                }
                 streamInfoPushItemMap.put(mediaInfo.getApp() + mediaInfo.getStream(), mediaInfo);
             }
         }
@@ -380,6 +383,12 @@ public class StreamPushServiceImpl implements IStreamPushService {
                 redisCatchStorage.removePushListItem(mediaInfo.getApp(), mediaInfo.getStream(), mediaServer.getId());
             }
         }
+        if (!pushItemMap.isEmpty()) {
+            for (StreamPush streamPush : pushItemMap.values()) {
+                // 如果没有国标编号，从数据库中删除
+                delete(streamPush.getId());
+            }
+        }
 
         Collection<StreamAuthorityInfo> streamAuthorityInfos = streamAuthorityInfoInfoMap.values();
         if (!streamAuthorityInfos.isEmpty()) {
@@ -399,11 +408,8 @@ public class StreamPushServiceImpl implements IStreamPushService {
                 stop(streamPushItem);
             }
         }
-//        // 移除没有GBId的推流
-//        streamPushMapper.deleteWithoutGBId(mediaServerId);
-//        // 其他的流设置未启用
-//        streamPushMapper.updateStatusByMediaServerId(mediaServerId, false);
-//        streamProxyMapper.updateStatusByMediaServerId(mediaServerId, false);
+        // 移除没有GBId的推流
+        streamPushMapper.deleteWithoutGBId(mediaServer.getId());
         // 发送流停止消息
         String type = "PUSH";
         // 发送redis消息
@@ -440,7 +446,9 @@ public class StreamPushServiceImpl implements IStreamPushService {
     }
 
     @Override
-    public void allOffline() {
+    public void allOfflineForRedisMsg() {
+        String serverId = redisCatchStorage.chooseOneServer(null);
+        boolean permission = userSetting.getServerId().equals(serverId);
         List<StreamPush> streamPushList = streamPushMapper.selectAll(null, null, null);
         if (streamPushList.isEmpty()) {
             return;
@@ -452,11 +460,13 @@ public class StreamPushServiceImpl implements IStreamPushService {
                 commonGBChannelList.add(streamPush.buildCommonGBChannel());
             }
         }
-        gbChannelService.offline(commonGBChannelList);
+        gbChannelService.offline(commonGBChannelList, permission);
     }
 
     @Override
-    public void offline(List<StreamPushItemFromRedis> offlineStreams) {
+    public void offlineforRedisMsg(List<StreamPushItemFromRedis> offlineStreams) {
+        String serverId = redisCatchStorage.chooseOneServer(null);
+        boolean permission = userSetting.getServerId().equals(serverId);
         // 更新部分设备离线
         List<StreamPush> streamPushList = streamPushMapper.getListInList(offlineStreams);
         if (streamPushList.isEmpty()) {
@@ -464,15 +474,17 @@ public class StreamPushServiceImpl implements IStreamPushService {
             return;
         }
         List<CommonGBChannel> commonGBChannelList = gbChannelService.queryListByStreamPushList(streamPushList);
-        gbChannelService.offline(commonGBChannelList);
+        gbChannelService.offline(commonGBChannelList, permission);
     }
 
     @Override
-    public void online(List<StreamPushItemFromRedis> onlineStreams) {
+    public void onlineForRedisMsg(List<StreamPushItemFromRedis> onlineStreams) {
         if (onlineStreams.isEmpty()) {
             log.info("[设备上线] 推流设备列表为空");
             return;
         }
+        String serverId = redisCatchStorage.chooseOneServer(null);
+        boolean permission = userSetting.getServerId().equals(serverId);
         // 更新部分设备上线streamPushService
         List<StreamPush> streamPushList = streamPushMapper.getListInList(onlineStreams);
         if (streamPushList.isEmpty()) {
@@ -482,7 +494,7 @@ public class StreamPushServiceImpl implements IStreamPushService {
             return;
         }
         List<CommonGBChannel> commonGBChannelList = gbChannelService.queryListByStreamPushList(streamPushList);
-        gbChannelService.online(commonGBChannelList);
+        gbChannelService.online(commonGBChannelList, permission);
     }
 
     @Override
@@ -549,15 +561,20 @@ public class StreamPushServiceImpl implements IStreamPushService {
     }
 
     @Override
-    public void batchUpdate(List<StreamPush> streamPushItemForUpdate) {
-        streamPushMapper.batchUpdate(streamPushItemForUpdate);
+    @Transactional
+    public void batchUpdateForRedisMsg(List<StreamPush> streamPushItemForUpdate) {
+        String serverId = redisCatchStorage.chooseOneServer(null);
+        boolean permission = userSetting.getServerId().equals(serverId);
+        if (permission) {
+            streamPushMapper.batchUpdate(streamPushItemForUpdate);
+        }
         List<CommonGBChannel> commonGBChannels = new ArrayList<>();
         for (StreamPush streamPush : streamPushItemForUpdate) {
             if (!ObjectUtils.isEmpty(streamPush.getGbDeviceId())) {
                 commonGBChannels.add(streamPush.buildCommonGBChannel());
             }
         }
-        gbChannelService.batchUpdate(commonGBChannels);
+        gbChannelService.batchUpdateForStreamPushRedisMsg(commonGBChannels, permission);
     }
 
     @Override

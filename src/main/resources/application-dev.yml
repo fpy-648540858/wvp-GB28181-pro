@@ -12,25 +12,42 @@ spring:
       max-request-size: 100MB
   cache:
     type: redis
-  # REDIS数据库配置
-  redis:
-    # [必须修改] Redis服务器IP, REDIS安装在本机的,使用127.0.0.1
-    host: 127.0.0.1
-    # [必须修改] 端口号
-    port: 6379
-    # [可选] 数据库 DB
-    database: 7
-    # [可选] 访问密码,若你的redis服务器没有设置密码，就不需要用密码去连接
-    password:
-    # [可选] 超时时间
-    timeout: 10000
-    # mysql数据源
+  data:
+    # REDIS数据库配置
+    redis:
+      # [必须修改] Redis服务器IP, REDIS安装在本机的,使用127.0.0.1
+      host: 127.0.0.1
+      # [必须修改] 端口号
+      port: 6379
+      # [可选] 数据库 DB
+      database: 7
+      # [可选] 访问密码,若你的redis服务器没有设置密码，就不需要用密码去连接
+      password: luna
+      # [可选] 超时时间
+      timeout: 10000
+  # mysql数据源
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/wvp273?useUnicode=true&characterEncoding=UTF8&rewriteBatchedStatements=true&serverTimezone=PRC&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true
     username: root
     password: root
+  # h2数据库
+  #  datasource:
+  #    driver-class-name: org.h2.Driver
+  #    url: jdbc:h2:mem:wvp
+  #    username: sa
+  #    password: 12345678
+  #    sql:
+  #      init:
+  #        # 启动时仅初始化内置的数据库，例如h2:mem
+  #        mode: embedded
+  #        schema-locations: file:数据库/2.7.4-h2/h2-schema.sql
+  #        data-locations: file:数据库/2.7.4-h2/h2-data.sql
+  #  # h2数据库控制台，请注意仅在测试环境下使用！
+  #  h2:
+  #    console:
+  #      enabled: true
 #[可选] WVP监听的HTTP端口, 网页和接口调用都是这个端口
 server:
   port: 18080
@@ -57,16 +74,14 @@ sip:
   domain: 4101050000
   # [可选]
   id: 41010500002000000001
-  # [可选] 默认设备认证密码，后续扩展使用设备单独密码, 移除密码将不进行校验
+  # [可选] 公共认证密码 移除密码将必须提前添加设备才能通过认证
   password: 12345678
   # 是否存储alarm信息
   alarm: false
 
-
 #zlm 默认服务器配置
 media:
   id: zlmediakit-local
-  #id: your_server_id
   # [必须修改] zlm服务器的内网IP
   ip: 192.168.61.76
   # [必须修改] zlm服务器的http.port

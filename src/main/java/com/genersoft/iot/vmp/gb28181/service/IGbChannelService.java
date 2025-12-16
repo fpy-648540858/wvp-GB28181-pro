@@ -1,12 +1,14 @@
 package com.genersoft.iot.vmp.gb28181.service;
 
 import com.genersoft.iot.vmp.gb28181.bean.*;
+import com.genersoft.iot.vmp.gb28181.controller.bean.Extent;
 import com.genersoft.iot.vmp.service.bean.GPSMsgInfo;
 import com.genersoft.iot.vmp.streamPush.bean.StreamPush;
 import com.github.pagehelper.PageInfo;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface IGbChannelService {
 
@@ -22,11 +24,11 @@ public interface IGbChannelService {
 
     int offline(CommonGBChannel commonGBChannel);
 
-    int offline(List<CommonGBChannel> commonGBChannelList);
+    int offline(List<CommonGBChannel> commonGBChannelList, boolean permission);
 
     int online(CommonGBChannel commonGBChannel);
 
-    int online(List<CommonGBChannel> commonGBChannelList);
+    int online(List<CommonGBChannel> commonGBChannelList, boolean permission);
 
     void batchAdd(List<CommonGBChannel> commonGBChannels);
 
@@ -40,7 +42,7 @@ public interface IGbChannelService {
 
     List<NetworkIdentificationType> getNetworkIdentificationTypeList();
 
-    void reset(int id);
+    void reset(int id, List<String> chanelFields);
 
     PageInfo<CommonGBChannel> queryListByCivilCode(int page, int count, String query, Boolean online, Integer channelType, String civilCode);
 
@@ -76,7 +78,7 @@ public interface IGbChannelService {
 
     void deleteChannelToGroupByGbDevice(List<Integer> deviceIds);
 
-    void batchUpdate(List<CommonGBChannel> commonGBChannels);
+    void batchUpdateForStreamPushRedisMsg(List<CommonGBChannel> commonGBChannels, boolean permission);
 
     CommonGBChannel queryOneWithPlatform(Integer platformId, String channelDeviceId);
 
@@ -84,7 +86,7 @@ public interface IGbChannelService {
 
     List<CommonGBChannel> queryListByStreamPushList(List<StreamPush> streamPushList);
 
-    PageInfo<CommonGBChannel> queryList(int page, int count, String query, Boolean online, Boolean hasRecordPlan, Integer channelType);
+    PageInfo<CommonGBChannel> queryList(int page, int count, String query, Boolean online, Boolean hasRecordPlan, Integer channelType, String civilCode, String parentDeviceId);
 
     PageInfo<CommonGBChannel> queryListByCivilCodeForUnusual(int page, int count, String query, Boolean online, Integer channelType);
 
@@ -97,4 +99,18 @@ public interface IGbChannelService {
     void updateGPSFromGPSMsgInfo(List<GPSMsgInfo> gpsMsgInfoList);
 
     void updateGPS(List<CommonGBChannel> channelList);
+
+    List<CommonGBChannel> queryListForMap(String query, Boolean online, Boolean hasRecordPlan, Integer channelType);
+
+    CommonGBChannel queryCommonChannelByDeviceChannel(DeviceChannel channel);
+
+    void resetLevel();
+
+    byte[] getTile(int z, int x, int y, String geoCoordSys);
+
+    String drawThin(Map<Integer, Double> zoomParam, Extent extent, String geoCoordSys);
+
+    DrawThinProcess thinProgress(String id);
+
+    void saveThin(String id);
 }

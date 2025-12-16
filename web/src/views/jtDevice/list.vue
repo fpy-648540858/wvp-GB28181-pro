@@ -208,7 +208,7 @@ export default {
   },
   mounted() {
     this.initData()
-    this.updateLooper = setInterval(this.initData, 10000)
+    this.updateLooper = setInterval(this.getList, 10000)
   },
   destroyed() {
     this.$destroy('videojs')
@@ -216,6 +216,8 @@ export default {
   },
   methods: {
     initData: function() {
+      this.currentPage = 1
+      this.total = 0
       this.getList()
     },
     currentChange: function(val) {
@@ -253,6 +255,13 @@ export default {
         this.$store.dispatch('jtDevice/deleteDevice', row.phoneNumber)
           .then(data => {
             this.getList()
+          })
+          .catch((error) => {
+            this.$message({
+              showClose: true,
+              message: error,
+              type: 'error'
+            })
           })
       }).catch(() => {
 
@@ -327,6 +336,13 @@ export default {
         .then((data) => {
           this.serverId = data.addOn.serverId
           this.$refs.configInfo.openDialog(data, 'jt1078Config')
+        })
+        .catch((error) => {
+          this.$message({
+            showClose: true,
+            message: error,
+            type: 'error'
+          })
         })
     },
     queryAttribute: function(itemData) {

@@ -218,9 +218,9 @@ public class ZLMMediaNodeServerService implements IMediaNodeServerService {
     public void getSnap(MediaServer mediaServer, String app, String stream, int timeoutSec, int expireSec, String path, String fileName) {
         String streamUrl;
         if (mediaServer.getRtspPort() != 0) {
-            streamUrl = String.format("rtsp://127.0.0.1:%s/%s/%s", mediaServer.getRtspPort(), "rtp", stream);
+            streamUrl = String.format("rtsp://127.0.0.1:%s/%s/%s", mediaServer.getRtspPort(), app, stream);
         } else {
-            streamUrl = String.format("http://127.0.0.1:%s/%s/%s.live.mp4", mediaServer.getHttpPort(), "rtp", stream);
+            streamUrl = String.format("http://127.0.0.1:%s/%s/%s.live.mp4", mediaServer.getHttpPort(), app, stream);
         }
         zlmresTfulUtils.getSnap(mediaServer, streamUrl, timeoutSec, expireSec, path, fileName);
     }
@@ -228,7 +228,7 @@ public class ZLMMediaNodeServerService implements IMediaNodeServerService {
     @Override
     public MediaInfo getMediaInfo(MediaServer mediaServer, String app, String stream) {
         ZLMResult<JSONObject> zlmResult = zlmresTfulUtils.getMediaInfo(mediaServer, app, "rtsp", stream);
-        if (zlmResult.getCode() != 0) {
+        if (zlmResult.getCode() != 0 || zlmResult.getData() == null || zlmResult.getData().getString("app") == null ) {
             return null;
         }
         return MediaInfo.getInstance(zlmResult.getData(), mediaServer, userSetting.getServerId());
@@ -636,7 +636,15 @@ public class ZLMMediaNodeServerService implements IMediaNodeServerService {
             param.put("callId", callId);
         }
         if (mediaInfo != null && !ObjectUtils.isEmpty(mediaInfo.getOriginTypeStr()))  {
-            param.put("originTypeStr", mediaInfo.getOriginTypeStr());
+            if (!ObjectUtils.isEmpty(mediaInfo.getOriginTypeStr())) {
+                param.put("originTypeStr", mediaInfo.getOriginTypeStr());
+            }
+            if (!ObjectUtils.isEmpty(mediaInfo.getVideoCodec())) {
+                param.put("videoCodec", mediaInfo.getVideoCodec());
+            }
+            if (!ObjectUtils.isEmpty(mediaInfo.getAudioCodec())) {
+                param.put("audioCodec", mediaInfo.getAudioCodec());
+            }
         }
         StringBuilder callIdParamBuilder = new StringBuilder();
         if (!param.isEmpty()) {
